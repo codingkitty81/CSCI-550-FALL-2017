@@ -115,7 +115,7 @@ int main() {
    Graph roads(N);
    Graph gBCC(N);
    Graph gBridge(N);
-   int ids[N];
+   int *ids = new int[N];
    
    while(std::cin >> from >> to) {
       roads.addRoads(from, to);
