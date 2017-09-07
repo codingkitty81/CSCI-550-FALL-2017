@@ -31,7 +31,7 @@ class Graph {
    public:
       int time;
       Graph(int cities = 1);
-      ~Graph() { free(cityList); }
+      ~Graph();
       std::vector<City> *cityList;
       void addRoads(int from, int to);
       void addBridges(int from, int to);
@@ -45,6 +45,11 @@ Graph::Graph(int cities) {
    for(int i = 0; i < cities; i++) { // looks at each vertex, so O(V)
       (*cityList)[i].name = i;
    }
+}
+
+Graph::~Graph() {
+   cityList->clear();
+   delete(cityList);
 }
 
 void Graph::addRoads(int from, int to) {
@@ -152,7 +157,7 @@ int main() {
    
    std::cout << ceil(leaves/2.0) << std::endl;
    
-   free(ids);
+   delete [] ids;
    
    return(0);
 }
