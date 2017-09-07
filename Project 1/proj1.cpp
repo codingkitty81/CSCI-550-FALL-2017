@@ -1,4 +1,13 @@
-
+/*
+ * @file proj1.cpp This file takes input using to cin, to construct a graph,
+ * then using DFS and lows to construct a tree. Once the tree is constructed
+ * the leaves are counted and divided by 2, take the ceiling of that result
+ * to get the number of edges to be added so any two vertices have two paths
+ * of travel.
+ *
+ * @author Katherine Jouzapaitis
+ * @date 07.09.2017
+ */
 #include <cstdlib>
 #include <iostream>
 #include <vector>
@@ -29,28 +38,10 @@ class Graph {
       void print();
 };
 
-
-void Graph::print() {
-   for(int i = 0; i < cities; i++) {
-      std::cout << i 
-         << ", n:" << (*cityList)[i].name
-         << ", d:" << (*cityList)[i].d
-         << ", f:" << (*cityList)[i].f
-         << ", l:" << (*cityList)[i].l
-         << ", c:" << (*cityList)[i].color
-         << ", id:" << (*cityList)[i].id
-         << ", adj:";
-      for(std::vector<City*>::iterator it = (*cityList)[i].adj.begin(); it != (*cityList)[i].adj.end(); ++it) {
-         std::cout << (*it)->name << ", ";
-      }
-      std::cout << std::endl;
-   }
-}
-
 Graph::Graph(int cities) {
    this->cities = cities;
    cityList = new std::vector<City>(cities);
-   for(int i = 0; i < cities; i++) {
+   for(int i = 0; i < cities; i++) { // looks at each vertex, so O(V)
       (*cityList)[i].name = i;
    }
 }
@@ -71,7 +62,7 @@ void Graph::DFS(int *ID) {
       (*cityList)[i].id = 0;
    }
    time = 0;
-   for(int i = 0; i < cities; i++) {
+   for(int i = 0; i < cities; i++) { // looks at each vertex, so O(V)
       if((*cityList)[i].color == 'W') {
          *ID += 1;
          DFS_Visit(&(*cityList)[i], ID);
@@ -85,7 +76,7 @@ void Graph::DFS_Visit(City *curCity, int *ID) {
    curCity->l = time;
    curCity->id = *ID;
    curCity->color = 'G';
-   for(std::vector<City*>::iterator it = curCity->adj.begin(); it != curCity->adj.end(); ++it) {
+   for(std::vector<City*>::iterator it = curCity->adj.begin(); it != curCity->adj.end(); ++it) { // will hit all edges twice since undirected, so O(E)
       if((*it)->color == 'W') {
          (*it)->parent = curCity;
          (*it)->id = *ID;
@@ -105,7 +96,7 @@ int main() {
    int ID = -1;
    int leaves = 0;
    
-   std::cin >> N >> M;
+   std::cin >> N >> M; // constant runtime for assignments
    
    if(N <= 0) {
       std::cout << "ERROR: graph is empty." << std::endl;
@@ -117,13 +108,15 @@ int main() {
    Graph gBridge(N);
    int *ids = new int[N];
    
-   while(std::cin >> from >> to) {
+   while(std::cin >> from >> to) { // will stop after M number of edges are read in, so O(E)
       roads.addRoads(from, to);
    }
    
+   // This DFS run will calculate the low for each vertex in order to identify biconnected components
    roads.DFS(&ID);
-   
-   for(std::vector<Graph::City>::iterator it = roads.cityList->begin(); it != roads.cityList->end(); ++it) {
+  
+   // Iterate through Graph roads, and place bridges in gBridge and other tree edges into gBCC
+   for(std::vector<Graph::City>::iterator it = roads.cityList->begin()+1; it != roads.cityList->end(); ++it) { // looks at each vertex in graph roads, so O(V)
       if((*it).d == (*it).l && (*it).parent->name != (*it).name) {
          gBridge.addRoads((*it).parent->name, (*it).name);
       } else {
@@ -133,23 +126,24 @@ int main() {
    
    ID = -1;
    
+   // This run through DFS will assign the IDs to each vertex
    gBCC.DFS(&ID);
 
    Graph collapsed(ID + 1);
    
-   for(std::vector<Graph::City>::iterator it = gBCC.cityList->begin(); it != gBCC.cityList->end(); ++it) {
+   for(std::vector<Graph::City>::iterator it = gBCC.cityList->begin(); it != gBCC.cityList->end(); ++it) { // looks at each vertex in gBCC, so O(V)
       ids[(*it).name] = (*it).id;
    }
    
-   for(std::vector<Graph::City>::iterator it = gBridge.cityList->begin(); it != gBridge.cityList->end(); ++it) {
-      if((*it).adj.size() > 0) {
+   for(std::vector<Graph::City>::iterator it = gBridge.cityList->begin(); it != gBridge.cityList->end(); ++it) { // looks at each vertex in gBridge, O(V)
+      if((*it).adj.size() > 0) { // this condition causes the adjacency list to be looked at once, so O(E)
          for(std::vector<Graph::City*>::iterator iter =(*it).adj.begin(); iter != (*it).adj.end(); ++iter) {
             collapsed.addBridges(ids[(*it).name], ids[(*iter)->name]);
          }
       }
    }
-   
-   for(std::vector<Graph::City>::iterator it = collapsed.cityList->begin(); it != collapsed.cityList->end(); ++it) {
+
+   for(std::vector<Graph::City>::iterator it = collapsed.cityList->begin(); it != collapsed.cityList->end(); ++it) { // looks at each vertex in collapsed, so O(V)
       if((*it).adj.size() == 1) {
          leaves++;
       }
