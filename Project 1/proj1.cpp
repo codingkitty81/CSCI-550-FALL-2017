@@ -31,7 +31,7 @@ class Graph {
    public:
       int time;
       Graph(int cities = 1);
-      ~Graph() { free[cityList] };
+      ~Graph() { free(cityList); }
       std::vector<City> *cityList;
       void addRoads(int from, int to);
       void addBridges(int from, int to);
@@ -100,7 +100,7 @@ int main() {
    std::cin >> N >> M; // constant runtime for assignments
    
    if(N <= 0) {
-      std::cout << "ERROR: graph is empty." << std::endl;
+      std::cerr << "ERROR: graph is empty." << std::endl;
       exit(1);
    }
    
