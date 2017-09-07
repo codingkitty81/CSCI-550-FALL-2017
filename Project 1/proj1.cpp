@@ -31,6 +31,7 @@ class Graph {
    public:
       int time;
       Graph(int cities = 1);
+      ~Graph() { free[cityList] };
       std::vector<City> *cityList;
       void addRoads(int from, int to);
       void addBridges(int from, int to);
@@ -150,6 +151,8 @@ int main() {
    }
    
    std::cout << ceil(leaves/2.0) << std::endl;
+   
+   free(ids);
    
    return(0);
 }
