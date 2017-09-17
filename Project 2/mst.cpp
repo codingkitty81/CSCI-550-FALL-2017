@@ -1,4 +1,13 @@
-
+/*
+ * @file Determines the lowest 10 year cost of either adding one of two edges or
+ *       adding both edges and removing an existing edge from a graph. Will
+ *       identify what edge to add or remove and what the cost over 10 years is,
+ *       and display the added/removed edge and cost.
+ *
+ * @author Katherine Jouzapaitis
+ * @date 17.09.2017
+ */
+ 
 #include <cstdlib>
 #include <iostream>
 #include <vector>
@@ -62,6 +71,7 @@ void Corporation::addWormHole(int src, int dest, int weight, int cost) {
     Station *s = &(*stationList)[dest];
     WormHole *w = new WormHole(s, weight, cost);
     (*stationList)[src].wormList->push_back(*w);
+    delete w;
 }
 
 void Corporation::DFS(int *removeEdge) { // used to identify the cycle, so doesn't need all aspects
@@ -135,39 +145,39 @@ int main() {
     
     std::cin >> ST;
     
-    Corporation redNova(RN + ST); // make Red Nova
+    Corporation combinedStations(RN + ST); // make Red Nova
     
     for(int i = 0; i < RN - 1; i++) { // add the worm holes
-        redNova.addWormHole(rFrom[i], rTo[i], rWgt[i]);
-        redNova.addWormHole(rTo[i], rFrom[i], rWgt[i]);
-        (*redNova.stationList)[rFrom[i]].name = rFrom[i];
-        (*redNova.stationList)[rTo[i]].name = rTo[i];
-        (*redNova.stationList)[rFrom[i]].id = 1;
-        (*redNova.stationList)[rTo[i]].id = 1;
+        combinedStations.addWormHole(rFrom[i], rTo[i], rWgt[i]);
+        combinedStations.addWormHole(rTo[i], rFrom[i], rWgt[i]);
+        (*combinedStations.stationList)[rFrom[i]].name = rFrom[i];
+        (*combinedStations.stationList)[rTo[i]].name = rTo[i];
+        (*combinedStations.stationList)[rFrom[i]].id = 1;
+        (*combinedStations.stationList)[rTo[i]].id = 1;
     }
     
     for(int i = 0; i < ST - 1; i++) { // add the worm holes
         std::cin >> from >> to >> wgt;
-        redNova.addWormHole(from + RN, to + RN, wgt);
-        redNova.addWormHole(to + RN, from + RN, wgt);
+        combinedStations.addWormHole(from + RN, to + RN, wgt);
+        combinedStations.addWormHole(to + RN, from + RN, wgt);
         totWeight1 += wgt * 10;
         totWeight2 += wgt * 10;
         totWeight3 += wgt * 10;
-        (*redNova.stationList)[from+RN].name = from;
-        (*redNova.stationList)[to+RN].name = to;
-        (*redNova.stationList)[from+RN].id = 2;
-        (*redNova.stationList)[to+RN].id = 2;
+        (*combinedStations.stationList)[from+RN].name = from;
+        (*combinedStations.stationList)[to+RN].name = to;
+        (*combinedStations.stationList)[from+RN].id = 2;
+        (*combinedStations.stationList)[to+RN].id = 2;
     }
 
     std::cin >> from >> to >> wgt >> cost1;
-    redNova.addWormHole(from, to + RN, wgt);
-    redNova.addWormHole(to + RN, from, wgt);
+    combinedStations.addWormHole(from, to + RN, wgt);
+    combinedStations.addWormHole(to + RN, from, wgt);
     totWeight1 += cost1 + wgt * 10;
     totWeight3 += cost1 + wgt * 10;
     
     std::cin >> from2 >> to2 >> wgt >> cost2;
-    redNova.addWormHole(from2, to2 + RN, wgt);
-    redNova.addWormHole(to2 + RN, from2, wgt);
+    combinedStations.addWormHole(from2, to2 + RN, wgt);
+    combinedStations.addWormHole(to2 + RN, from2, wgt);
     totWeight2 += cost2 + wgt * 10;
     totWeight3 += cost2 + wgt * 10;
 
@@ -178,25 +188,8 @@ int main() {
     // index 3 = from rank
     // index 4 = to rank
 
-    redNova.DFS(removeEdge);
-    
-    /*
-    for(std::vector<Corporation::Station>::iterator it = redNova.stationList->begin(); it != redNova.stationList->end(); ++it) {
-        std::cout << (*it).name << " ";
-        for(unsigned int i = 0; i < (*it).wormList->size(); i++) {
-            std::cout << (*(*it).wormList)[i].dest->name << " ";
-        }
-        std::cout << std::endl;
-    }
-    
-    for(int i = 0; i < 5; i++) {
-        std::cout << removeEdge[i] << ", ";
-    }
-    std::cout << std::endl;
-    
-    std::cout << totWeight1 << " " << totWeight2 << std::endl;
-    */
-    
+    combinedStations.DFS(removeEdge);
+
     totWeight3 -= removeEdge[2] * 10;
     
     if(totWeight3 < totWeight1 && totWeight3 < totWeight2) {
